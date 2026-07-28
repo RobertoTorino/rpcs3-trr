@@ -397,7 +397,7 @@ int main(int argc, char** argv)
 		ver.m.ch  = nullptr;
 		ver.m.sev = logs::level::always;
 		ver.stamp = 0;
-		ver.text  = fmt::format("RPCS3 v%s | %s%s\n%s", rpcs3::get_version().to_string(), rpcs3::get_branch(), firmware_string, utils::get_system_info());
+		ver.text  = fmt::format("%s v%s | %s%s\n%s", rpcs3::get_application_name(), rpcs3::get_version_with_branding(), rpcs3::get_branch(), firmware_string, utils::get_system_info());
 
 		// Write OS version
 		logs::stored_message os;
@@ -449,8 +449,8 @@ int main(int argc, char** argv)
 	const bool use_cli_style = find_arg(arg_style, argc, argv) || find_arg(arg_stylesheet, argc, argv);
 
 	QScopedPointer<QCoreApplication> app(createApplication(argc, argv));
-	app->setApplicationVersion(QString::fromStdString(rpcs3::get_version().to_string()));
-	app->setApplicationName("RPCS3");
+	app->setApplicationVersion(QString::fromStdString(rpcs3::get_version_with_branding()));
+	app->setApplicationName(QString::fromStdString(rpcs3::get_application_name()));
 
 	// Command line args
 	QCommandLineParser parser;

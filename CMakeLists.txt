@@ -23,6 +23,12 @@ option(USE_DISCORD_RPC "Discord rich presence integration" ON)
 option(USE_SYSTEM_ZLIB "Prefer system ZLIB instead of the builtin one" ON)
 option(USE_VULKAN "Vulkan render backend" ON)
 option(USE_PRECOMPILED_HEADERS "Use precompiled headers" ON)
+set(RPCS3_BRAND_SUFFIX "TRR" CACHE STRING "Optional brand suffix appended to displayed app/version names")
+
+if (NOT RPCS3_BRAND_SUFFIX STREQUAL "")
+	string(REPLACE "\"" "\\\"" RPCS3_BRAND_SUFFIX_ESCAPED "${RPCS3_BRAND_SUFFIX}")
+	add_compile_definitions(RPCS3_BRAND_SUFFIX="${RPCS3_BRAND_SUFFIX_ESCAPED}")
+endif()
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/rpcs3/cmake_modules")
 

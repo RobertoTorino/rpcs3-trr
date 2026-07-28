@@ -3,6 +3,10 @@
 #include "git-version.h"
 #include "Utilities/StrUtil.h"
 
+#ifndef RPCS3_BRAND_SUFFIX
+#define RPCS3_BRAND_SUFFIX ""
+#endif
+
 namespace rpcs3
 {
 	std::string_view get_branch()
@@ -32,6 +36,34 @@ namespace rpcs3
 		return version;
 	}
 
+	std::string get_version_with_branding()
+	{
+		std::string version = get_version().to_string();
+		constexpr std::string_view suffix = RPCS3_BRAND_SUFFIX;
+
+		if (!suffix.empty())
+		{
+			version += " ";
+			version += suffix;
+		}
+
+		return version;
+	}
+
+	std::string get_application_name()
+	{
+		std::string name = "RPCS3";
+		constexpr std::string_view suffix = RPCS3_BRAND_SUFFIX;
+
+		if (!suffix.empty())
+		{
+			name += " ";
+			name += suffix;
+		}
+
+		return name;
+	}
+
 	std::string get_version_and_branch()
 	{
 		// Get version by substringing VersionNumber-buildnumber-commithash to get just the part before the dash
@@ -48,6 +80,13 @@ namespace rpcs3
 		else
 		{
 			version = version.substr(0, last_minus);
+		}
+
+		constexpr std::string_view suffix = RPCS3_BRAND_SUFFIX;
+		if (!suffix.empty())
+		{
+			version += " ";
+			version += suffix;
 		}
 
 		return version;
