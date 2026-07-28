@@ -9,6 +9,8 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$Generator,
 
+    [string]$Toolset = "v143,host=x64",
+
     [Parameter(Mandatory = $true)]
     [string]$BuildConfig,
 
@@ -17,6 +19,14 @@ param(
 
     [Parameter(Mandatory = $true)]
     [string]$Qt6Dir,
+
+    [Parameter(Mandatory = $false)]
+    [AllowEmptyString()]
+    [string]$Qt5Root,
+
+    [Parameter(Mandatory = $false)]
+    [AllowEmptyString()]
+    [string]$Qt5Dir,
 
     [Parameter(Mandatory = $true)]
     [string]$VulkanSdk,
@@ -163,23 +173,28 @@ $clPath = (Get-Command cl.exe -ErrorAction Stop).Source
 # Pin it to a valid major.minor and pass the same value in configure args.
 $env:CMAKE_POLICY_VERSION_MINIMUM = "3.16"
 
+$cmakePrefixPath = $QtRoot
+if (-not [string]::IsNullOrWhiteSpace($Qt5Root)) {
+    $cmakePrefixPath = $Qt5Root
+}
+
 $configureArgs = @(
     "--fresh",
     "-S", $Root,
     "-B", $BuildDir,
     "-G", $Generator,
     "-A", "x64",
+    "-T", $Toolset,
     "-DCMAKE_C_COMPILER=$clPath",
     "-DCMAKE_CXX_COMPILER=$clPath",
     "-DCMAKE_CXX_STANDARD=20",
     "-DCMAKE_CXX_STANDARD_REQUIRED=ON",
     "-DABSL_PROPAGATE_CXX_STD=OFF",
-    "-DCMAKE_PREFIX_PATH=$QtRoot",
+    "-DCMAKE_PREFIX_PATH=$cmakePrefixPath",
     "-DCMAKE_POLICY_VERSION_MINIMUM:STRING=3.16",
     "-DQt6_DIR=$Qt6Dir",
     "-DQTDIR=$QtRoot",
     "-DVULKAN_SDK=$VulkanSdk",
-    "-DLLVM_DIR=$LLVMDir",
     "-DUSE_SYSTEM_ZLIB=OFF",
     "-DUSE_SYSTEM_SDL=OFF",
     "-DUSE_SYSTEM_CURL=OFF",
@@ -189,6 +204,14 @@ $configureArgs = @(
     "-DBUILD_LLVM_SUBMODULE=$BuildLlvmSubmodule",
     "-DLLVM_ENABLE_DIA_SDK=OFF"
 )
+
+if (-not [string]::IsNullOrWhiteSpace($Qt5Dir)) {
+    $configureArgs += "-DQt5_DIR=$Qt5Dir"
+}
+
+if (-not [string]::IsNullOrWhiteSpace($LLVMDir)) {
+    $configureArgs += "-DLLVM_DIR=$LLVMDir"
+}
 
 $buildArgs = @(
     "--build", $BuildDir,
