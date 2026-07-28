@@ -120,11 +120,17 @@ function Invoke-CMakePhase {
             continue
         }
 
-        Write-Error ("[{0}] failed with exit code {1}" -f $PhaseName, $exitCode)
-        Write-Host "---- Last log lines ----"
+        Write-Host ("[{0}] failed with exit code {1}" -f $PhaseName, $exitCode)
+        Write-Host "---- Last stdout log lines ----"
         if (Test-Path $phaseLogPath) {
-            Get-Content -Path $phaseLogPath -Tail 120
+            Get-Content -Path $phaseLogPath -Tail 200
         }
+
+        if (Test-Path $phaseErrPath) {
+            Write-Host "---- Last stderr log lines ----"
+            Get-Content -Path $phaseErrPath -Tail 200
+        }
+
         exit $exitCode
     }
 }

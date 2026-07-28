@@ -102,6 +102,14 @@ jobs:
             -Qt5Root $env:QT5_ROOT `
             -VulkanRoot C:\VulkanSDK
 
+      - name: Upload build logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rpcs3-trr-nightly-build-logs
+          path: build-trr-release/build-logs/**
+          if-no-files-found: ignore
+
       - name: Package nightly payload
         shell: pwsh
         run: |
