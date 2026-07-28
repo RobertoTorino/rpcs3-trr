@@ -5,7 +5,7 @@
 This repository currently contains two Windows build trees:
 
 1. `build` - regular/reference build tree. Keep this as-is.
-2. `build-trr-release` - active Tekken Revolution Reborn build tree. This is the build we work from now on.
+2. `build-trr-release` - active Tekken Revolution Reborn build tree.
 
 Reference build version: `RPCS3 0.0.13-11450-43c87e99 Alpha`.
 

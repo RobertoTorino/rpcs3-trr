@@ -47,12 +47,12 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install aqtinstall==3.3.0
 
-          $qt6Versions = @("6.7.3", "6.7.2", "6.6.3")
+          $qt6Versions = @("6.8.3", "6.7.3", "6.7.2", "6.6.3")
           $qt6Root = $null
           foreach ($ver in $qt6Versions) {
             Write-Host "Trying Qt6 version: $ver"
             try {
-              python -m aqt install-qt windows desktop $ver win64_msvc2022_64 --autodesktop --outputdir C:\Qt --base https://download.qt.io
+              python -m aqt install-qt windows desktop $ver win64_msvc2022_64 --autodesktop --outputdir C:\Qt
               $candidate = "C:\Qt\$ver\msvc2022_64"
               if (Test-Path "$candidate\lib\cmake\Qt6\Qt6Config.cmake") {
                 $qt6Root = $candidate
