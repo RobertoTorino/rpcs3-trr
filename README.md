@@ -79,6 +79,31 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\build_rpcs3_binary
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\clean_rpcs3_build.ps1 -BuildDir build-trr-release
 ```
 
+## Release Tag Convention
+
+Use this lightweight promote-tag format for release builds:
+
+* `trr-vYYYY.MM.DD.N`
+
+Where:
+
+1. `YYYY` = 4-digit year
+2. `MM` = 2-digit month
+3. `DD` = 2-digit day
+4. `N` = same-day release increment starting at `1`
+
+Examples:
+
+* `trr-v2026.07.28.1`
+* `trr-v2026.07.28.2`
+* `trr-v2026.08.03.1`
+
+Notes:
+
+1. Keep tags immutable after push (create a new increment instead of force-moving an existing tag).
+2. This repository's GitHub release workflow is triggered by tags matching `trr-v*`.
+3. Prefer tagging from `main` when promoting a validated release commit.
+
 ## Legacy/Reference Build Tree
 
 `build` is retained as the regular/reference build for `RPCS3 0.0.13-11450-43c87e99 Alpha`.
