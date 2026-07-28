@@ -23,8 +23,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          submodules: recursive
+          submodules: false
           fetch-depth: 0
+
+      - name: Sync and fetch submodules
+        shell: pwsh
+        run: |
+          git config --global url."https://github.com/asmjit/asmjit.git".insteadOf "https://github.com/kobalicek/asmjit"
+          git submodule sync --recursive
+          git submodule update --init --recursive --depth 1
 
       - name: Set up MSBuild
         uses: microsoft/setup-msbuild@v2
