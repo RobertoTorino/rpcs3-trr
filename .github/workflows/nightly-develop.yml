@@ -15,7 +15,7 @@ jobs:
 
     env:
       BUILD_DIR: build-trr-release
-      QT6_ROOT: C:\Qt\6.11.1\msvc2022_64
+      QT6_ROOT: C:\Qt\6.7.3\msvc2022_64
       QT5_ROOT: C:\Qt\5.15.2\msvc2019_64
 
     steps:
@@ -29,10 +29,15 @@ jobs:
       - name: Set up MSBuild
         uses: microsoft/setup-msbuild@v2
 
-      - name: Install Qt 6.11.1 (MSVC 2022 x64)
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Qt 6.7.3 (MSVC 2022 x64)
         uses: jurplel/install-qt-action@v4
         with:
-          version: "6.11.1"
+          version: "6.7.3"
           host: "windows"
           target: "desktop"
           arch: "win64_msvc2022_64"
