@@ -10,6 +10,8 @@
 
 #include "restore_new.h"
 #include <vulkan/vulkan.h>
+#if __has_include(<vulkan/vk_sdk_platform.h>)
 #include <vulkan/vk_sdk_platform.h>
+#endif
 #include "define_new_memleakdetect.h"
 #include "util/types.hpp"

@@ -232,6 +232,9 @@ add_library(3rdparty_discord-rpc INTERFACE)
 
 # We don't want Discord Rich Presence on the BSDs and other OSes
 if (USE_DISCORD_RPC AND (WIN32 OR CMAKE_SYSTEM MATCHES "Linux" OR APPLE))
+	if (WIN32 AND MSVC)
+		message(WARNING "USE_DISCORD_RPC is enabled, but bundled discord-rpc.lib is built with /MT and is incompatible with this /MD build. Discord RPC will be disabled for this build.")
+	else()
 	if (WIN32 AND NOT MSVC)
 		ExternalProject_Add(discord-rpc
 				GIT_REPOSITORY https://github.com/discordapp/discord-rpc
@@ -259,6 +262,7 @@ if (USE_DISCORD_RPC AND (WIN32 OR CMAKE_SYSTEM MATCHES "Linux" OR APPLE))
 	target_link_libraries(3rdparty_discord-rpc INTERFACE ${DISCORD_RPC_LIB})
 	if(APPLE)
 		target_link_libraries(3rdparty_discord-rpc INTERFACE "objc" "-framework Foundation" "-framework CoreServices")
+	endif()
 	endif()
 endif()
 
@@ -454,10 +458,15 @@ else()
 	target_include_directories(wolfssl INTERFACE "wolfssl/")
 	# This is needed for CURL
 	configure_file(${CMAKE_CURRENT_SOURCE_DIR}/wolfssl/wolfssl/options.h.in ${CMAKE_CURRENT_BINARY_DIR}/wolfssl/wolfssl/options.h)
-	set(WolfSSL_LIBRARY "${CMAKE_CURRENT_BINARY_DIR}/wolfssl/libwolfssl.a")
-	set(WolfSSL_LIBRARIES "${CMAKE_CURRENT_BINARY_DIR}/wolfssl/libwolfssl.a")
-	set(WolfSSL_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/wolfssl/" "${CMAKE_CURRENT_BINARY_DIR}/wolfssl/")
-	set(WolfSSL_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/wolfssl/" "${CMAKE_CURRENT_BINARY_DIR}/wolfssl/")
+	if(MSVC)
+		set(WolfSSL_LIBRARY "${CMAKE_CURRENT_BINARY_DIR}/wolfssl/$<CONFIG>/wolfssl${CMAKE_STATIC_LIBRARY_SUFFIX}")
+		set(WolfSSL_LIBRARIES "${CMAKE_CURRENT_BINARY_DIR}/wolfssl/$<CONFIG>/wolfssl${CMAKE_STATIC_LIBRARY_SUFFIX}")
+	else()
+		set(WolfSSL_LIBRARY "${CMAKE_CURRENT_BINARY_DIR}/wolfssl/libwolfssl.a")
+		set(WolfSSL_LIBRARIES "${CMAKE_CURRENT_BINARY_DIR}/wolfssl/libwolfssl.a")
+	endif()
+	set(WolfSSL_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/wolfssl/" "${CMAKE_CURRENT_SOURCE_DIR}/wolfssl/wolfssl/" "${CMAKE_CURRENT_BINARY_DIR}/wolfssl/" "${CMAKE_CURRENT_BINARY_DIR}/wolfssl/wolfssl/")
+	set(WolfSSL_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/wolfssl/" "${CMAKE_CURRENT_SOURCE_DIR}/wolfssl/wolfssl/" "${CMAKE_CURRENT_BINARY_DIR}/wolfssl/" "${CMAKE_CURRENT_BINARY_DIR}/wolfssl/wolfssl/")
 endif()
 
 # CURL
