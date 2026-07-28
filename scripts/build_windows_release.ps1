@@ -182,13 +182,13 @@ if (-not [string]::IsNullOrWhiteSpace($Qt5Root)) {
     $cmakePrefixPath = $Qt5Root
 }
 
+$isVisualStudioGenerator = $Generator -like "Visual Studio*"
+
 $configureArgs = @(
     "--fresh",
     "-S", $Root,
     "-B", $BuildDir,
     "-G", $Generator,
-    "-A", "x64",
-    "-T", $Toolset,
     "-DCMAKE_CXX_STANDARD=20",
     "-DCMAKE_CXX_STANDARD_REQUIRED=ON",
     "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL",
@@ -208,6 +208,13 @@ $configureArgs = @(
     "-DBUILD_LLVM_SUBMODULE=$BuildLlvmSubmodule",
     "-DLLVM_ENABLE_DIA_SDK=OFF"
 )
+
+if ($isVisualStudioGenerator) {
+    $configureArgs += @(
+        "-A", "x64",
+        "-T", $Toolset
+    )
+}
 
 if (-not [string]::IsNullOrWhiteSpace($Qt5Dir)) {
     $configureArgs += "-DQt5_DIR=$Qt5Dir"

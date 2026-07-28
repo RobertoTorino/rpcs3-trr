@@ -19,6 +19,10 @@ $ErrorActionPreference = "Stop"
 function Resolve-CMakeGenerator {
     param([Parameter(Mandatory = $true)][string]$VsDevCmd)
 
+    if (Get-Command ninja.exe -ErrorAction SilentlyContinue) {
+        return "Ninja Multi-Config"
+    }
+
     # Prefer the generator that matches the detected Visual Studio install.
     if ($VsDevCmd -match "\\2022\\") {
         return "Visual Studio 17 2022"
