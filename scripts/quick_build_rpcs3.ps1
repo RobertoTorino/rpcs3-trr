@@ -17,6 +17,18 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
 function Resolve-CMakeGenerator {
+    param([Parameter(Mandatory = $true)][string]$VsDevCmd)
+
+    # Prefer the generator that matches the detected Visual Studio install.
+    if ($VsDevCmd -match "\\2022\\") {
+        return "Visual Studio 17 2022"
+    }
+
+    if ($VsDevCmd -match "\\2026\\") {
+        return "Visual Studio 18 2026"
+    }
+
+    # Fallback for uncommon layouts.
     if ((& cmake --help 2>&1) -match "Visual Studio 17 2022") {
         return "Visual Studio 17 2022"
     }
@@ -25,7 +37,7 @@ function Resolve-CMakeGenerator {
         return "Visual Studio 18 2026"
     }
 
-    throw "Could not find a supported Visual Studio generator (2022 or 2026)."
+    throw "Could not resolve a supported Visual Studio generator from detected VsDevCmd path '$VsDevCmd'."
 }
 
 function Resolve-VsDevCmd {
@@ -206,8 +218,8 @@ if (-not (Test-Path (Join-Path $QtRoot "lib\cmake\Qt6\Qt6Config.cmake"))) {
     throw "Qt6Config.cmake not found under '$QtRoot'. Please ensure Qt is installed correctly."
 }
 
-$generator = Resolve-CMakeGenerator
 $vsDevCmd = Resolve-VsDevCmd
+$generator = Resolve-CMakeGenerator -VsDevCmd $vsDevCmd
 Import-VsEnvironment -VsDevCmd $vsDevCmd
 $vulkanSdk = Resolve-VulkanSdk -RootPath $VulkanRoot
 $llvmSetup = Resolve-LlvmSetup -RepoRoot $Root -Preferred $LLVMDir
