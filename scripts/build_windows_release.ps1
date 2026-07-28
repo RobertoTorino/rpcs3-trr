@@ -167,8 +167,6 @@ $BuildDir = [System.IO.Path]::GetFullPath($BuildDir)
 $LogDir = Join-Path $BuildDir "build-logs"
 New-Item -ItemType Directory -Path $LogDir -Force | Out-Null
 
-$clPath = (Get-Command cl.exe -ErrorAction Stop).Source
-
 # CMake 4 + Qt package files fail if this resolves to a major-only value like "3".
 # Pin it to a valid major.minor and pass the same value in configure args.
 $env:CMAKE_POLICY_VERSION_MINIMUM = "3.16"
@@ -185,10 +183,9 @@ $configureArgs = @(
     "-G", $Generator,
     "-A", "x64",
     "-T", $Toolset,
-    "-DCMAKE_C_COMPILER=$clPath",
-    "-DCMAKE_CXX_COMPILER=$clPath",
     "-DCMAKE_CXX_STANDARD=20",
     "-DCMAKE_CXX_STANDARD_REQUIRED=ON",
+    "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL",
     "-DABSL_PROPAGATE_CXX_STD=OFF",
     "-DCMAKE_PREFIX_PATH=$cmakePrefixPath",
     "-DCMAKE_POLICY_VERSION_MINIMUM:STRING=3.16",
@@ -199,6 +196,7 @@ $configureArgs = @(
     "-DUSE_SYSTEM_SDL=OFF",
     "-DUSE_SYSTEM_CURL=OFF",
     "-DUSE_SYSTEM_OPENCV=OFF",
+    "-DYAML_MSVC_SHARED_RT=ON",
     "-DALSOFT_ENABLE_MODULES=OFF",
     "-DWITH_LLVM=ON",
     "-DBUILD_LLVM_SUBMODULE=$BuildLlvmSubmodule",

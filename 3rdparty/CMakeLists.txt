@@ -175,6 +175,9 @@ set(YAML_CPP_BUILD_TESTS OFF CACHE BOOL "Enable testing" FORCE)
 set(YAML_CPP_BUILD_TOOLS OFF CACHE BOOL "Enable parse tools" FORCE)
 set(YAML_CPP_BUILD_CONTRIB OFF CACHE BOOL "Enable contrib stuff in library" FORCE)
 add_subdirectory(yaml-cpp EXCLUDE_FROM_ALL)
+if (MSVC)
+	set_property(TARGET yaml-cpp PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+endif()
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX_OLD})
 

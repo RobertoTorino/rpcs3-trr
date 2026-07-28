@@ -1,40 +1,86 @@
-RPCS3
-=====
+# RPCS3 Tekken Revolution Reborn Build Guide
 
-[![Azure Build Status](https://dev.azure.com/nekotekina/nekotekina/_apis/build/status/RPCS3.rpcs3?branchName=master)](https://dev.azure.com/nekotekina/nekotekina/_build?definitionId=4&branchName=master)
-[![Cirrus CI - Base Branch Build Status](https://img.shields.io/cirrus/github/RPCS3/rpcs3?label=Cirrus%20CI%20(FreeBSD)&logo=cirrus-ci)](https://cirrus-ci.com/github/RPCS3/rpcs3)
-[![RPCS3 discord server](https://img.shields.io/discord/272035812277878785?color=%237289DA&label=RPCS3%20Discord&logo=discord&logoColor=white)](https://discord.me/rpcs3)
+This repository currently contains two Windows build trees:
 
-The world's first free and open-source PlayStation 3 emulator/debugger, written in C++ for Windows and Linux.
+1. `build` - regular/reference build tree. Keep this as-is.
+2. `build-trr-release` - active Tekken Revolution Reborn build tree. This is the build we work from now on.
 
-You can find some basic information on our [**website**](https://rpcs3.net/). Game info is being populated on the [**Wiki**](https://wiki.rpcs3.net/).
-For discussion about this emulator, PS3 emulation, and game compatibility reports, please visit our [**forums**](https://forums.rpcs3.net) and our [**Discord server**](https://discord.me/RPCS3).
+Reference build version: `RPCS3 0.0.13-11450-43c87e99 Alpha`.
 
-[**Support Lead Developers Nekotekina and kd-11 on Patreon**](https://www.patreon.com/Nekotekina)
+For historical upstream notes, see `README_0.0.13.md` and `BUILDING_0.0.13.md`.
 
-## Contributing
+<img alt="Tekken_Revolution_Reborn.png" src="images/Tekken_Revolution_Reborn.png" width="512"/>
 
-If you want to help the project but do not code, the best way to help out is to test games and make bug reports. See:
-* [Quickstart](https://rpcs3.net/quickstart)
+## Environment (Windows 10/11)
 
-If you want to contribute as a developer, please take a look at the following pages:
+Install:
 
-* [Coding Style](https://github.com/RPCS3/rpcs3/wiki/Coding-Style)
-* [Developer Information](https://github.com/RPCS3/rpcs3/wiki/Developer-Information)
-* [Roadmap](https://rpcs3.net/roadmap)
+* Visual Studio 2022 with Desktop development with C++
+* CMake (in `PATH`)
+* PowerShell 5+ (or PowerShell 7)
+* Python (in `PATH`)
+* Qt 6.11.1 (`msvc2022_64`)
+* Vulkan SDK ([install guide](https://vulkan.lunarg.com/doc/sdk/latest/windows/getting_started.html))
+* LLVM 11:
+  * Either source tree under `llvm/` (contains `CMakeLists.txt`), or
+  * Prebuilt LLVM 11 with `LLVMConfig.cmake` available via `LLVM_DIR`
 
-You should also contact any of the developers in the forums or in the Discord server to learn more about the current state of the emulator.
+## Primary Build Workflow (build-trr-release)
 
-## Building
+From repository root, run:
 
-See [BUILDING.md](BUILDING.md) for more information about how to setup an environment to build RPCS3.
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\quick_build_rpcs3.ps1 -BuildDir .\build-trr-release -Clean
+```
 
-## Running
+What this does:
 
-Check our friendly [quickstart](https://rpcs3.net/quickstart) guide to make sure your computer meets the minimum system requirements to run RPCS3.
+1. Detects Visual Studio generator/toolchain.
+2. Resolves Vulkan SDK and Qt.
+3. Resolves LLVM 11 source/prebuilt configuration.
+4. Configures and builds target `rpcs3`.
+5. Writes logs to `build-trr-release\build-logs\`.
 
-Don't forget to have your graphics driver up to date and to install the [Visual C++ Redistributable Packages for Visual Studio 2019](https://aka.ms/vs/16/release/VC_redist.x64.exe) if you are a Windows user.
+Output binary:
 
-## License
+* `build-trr-release\bin\rpcs3.exe`
 
-Most files are licensed under the terms of GNU GPLv2 License; see LICENSE file for details. Some files may be licensed differently; check appropriate file headers for details.
+Optional deploy step for Qt runtime files:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\quick_build_rpcs3.ps1 -BuildDir .\build-trr-release -DeployQt
+```
+
+If LLVM is not auto-detected, pass it explicitly:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\quick_build_rpcs3.ps1 -BuildDir .\build-trr-release -LLVMDir "C:\path\to\lib\cmake\llvm"
+```
+
+## Script Entry Points
+
+All maintained build automation lives in `scripts/`:
+
+* `scripts/quick_build_rpcs3.ps1` - configure + build (recommended)
+* `scripts/configure_rpcs3.ps1` - configure only
+* `scripts/build_rpcs3_binary.ps1` - build only (configured tree required)
+* `scripts/clean_rpcs3_build.ps1` - remove build directory
+
+Examples:
+
+```powershell
+# Configure only
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\configure_rpcs3.ps1 -BuildDir build-trr-release
+
+# Build only
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\build_rpcs3_binary.ps1 -BuildDir build-trr-release
+
+# Clean build tree
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\clean_rpcs3_build.ps1 -BuildDir build-trr-release
+```
+
+## Legacy/Reference Build Tree
+
+`build` is retained as the regular/reference build for `RPCS3 0.0.13-11450-43c87e99 Alpha`.
+
+Do not delete or repurpose `build` unless you intentionally want to recreate that tree.
