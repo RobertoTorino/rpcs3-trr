@@ -1,0 +1,133 @@
+name: Build TRR Release Package
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "trr-v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows-release:
+    runs-on: windows-latest
+    timeout-minutes: 180
+
+    env:
+      BUILD_DIR: build-trr-release
+      QT6_ROOT: C:\Qt\6.11.1\msvc2022_64
+      QT5_ROOT: C:\Qt\5.15.2\msvc2019_64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Set up MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Install Qt 6.11.1 (MSVC 2022 x64)
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: "6.11.1"
+          host: "windows"
+          target: "desktop"
+          arch: "win64_msvc2022_64"
+          dir: "C:/Qt"
+          cache: true
+
+      - name: Install Qt 5.15.2 (MSVC 2019 x64)
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: "5.15.2"
+          host: "windows"
+          target: "desktop"
+          arch: "win64_msvc2019_64"
+          dir: "C:/Qt"
+          cache: true
+
+      - name: Ensure Vulkan SDK is available
+        shell: pwsh
+        run: |
+          if (Test-Path "C:\VulkanSDK") {
+            Write-Host "VulkanSDK root already exists."
+            exit 0
+          }
+
+          choco install vulkan-sdk --yes --no-progress
+
+          if (-not (Test-Path "C:\VulkanSDK")) {
+            throw "Vulkan SDK installation did not create C:\VulkanSDK"
+          }
+
+      - name: Build RPCS3 TRR (build-trr-release)
+        shell: pwsh
+        run: |
+          powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\quick_build_rpcs3.ps1 `
+            -BuildDir .\$env:BUILD_DIR `
+            -Clean `
+            -DeployQt `
+            -QtRoot $env:QT6_ROOT `
+            -Qt5Root $env:QT5_ROOT `
+            -VulkanRoot C:\VulkanSDK
+
+      - name: Package release payload
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $binDir = Join-Path $env:GITHUB_WORKSPACE "$env:BUILD_DIR\bin"
+          if (-not (Test-Path (Join-Path $binDir "rpcs3.exe"))) {
+            throw "Expected artifact not found: $binDir\rpcs3.exe"
+          }
+
+          New-Item -ItemType Directory -Force -Path "release" | Out-Null
+
+          $shortSha = "${env:GITHUB_SHA}".Substring(0, 8)
+          $packageBase = "rpcs3-trr-win64-$shortSha"
+          $stagingDir = Join-Path "release" $packageBase
+          New-Item -ItemType Directory -Force -Path $stagingDir | Out-Null
+
+          Copy-Item -Path "$binDir\*" -Destination $stagingDir -Recurse -Force
+
+          $compatDb = Join-Path $stagingDir "GuiConfigs\compat_database.dat"
+          New-Item -ItemType Directory -Force -Path (Split-Path $compatDb -Parent) | Out-Null
+          Invoke-WebRequest -Uri "https://rpcs3.net/compatibility?api=v1&export" -OutFile $compatDb
+
+          $cacert = Join-Path $stagingDir "cacert.pem"
+          Invoke-WebRequest -Uri "https://curl.se/ca/cacert.pem" -OutFile $cacert
+
+          $zipPath = Join-Path "release" ("$packageBase.zip")
+          if (Test-Path $zipPath) {
+            Remove-Item $zipPath -Force
+          }
+
+          Compress-Archive -Path (Join-Path $stagingDir "*") -DestinationPath $zipPath -CompressionLevel Optimal
+
+          $hash = (Get-FileHash -Path $zipPath -Algorithm SHA256).Hash.ToLowerInvariant()
+          $hashPath = "$zipPath.sha256"
+          Set-Content -Path $hashPath -Value $hash -NoNewline
+
+          "PACKAGE_ZIP=$zipPath" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "PACKAGE_SHA256=$hashPath" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Upload package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rpcs3-trr-windows-package
+          path: |
+            ${{ env.PACKAGE_ZIP }}
+            ${{ env.PACKAGE_SHA256 }}
+          if-no-files-found: error
+
+      - name: Publish GitHub Release assets
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            ${{ env.PACKAGE_ZIP }}
+            ${{ env.PACKAGE_SHA256 }}
+          generate_release_notes: true
