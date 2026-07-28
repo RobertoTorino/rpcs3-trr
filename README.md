@@ -1,4 +1,4 @@
-[![Build TRR Release Package](https://github.com/RobertoTorino/rpcs3-trr/actions/workflows/release-package.yml/badge.svg)](https://github.com/RobertoTorino/rpcs3-trr/actions/workflows/release-package.yml)
+[![Build TRR Release Package](https://github.com/RobertoTorino/rpcs3-trr/actions/workflows/release-package.yml/badge.svg)](https://github.com/RobertoTorino/rpcs3-trr/actions/workflows/release-package.yml) [![Build TRR Nightly (develop)](https://github.com/RobertoTorino/rpcs3-trr/actions/workflows/nightly-develop.yml/badge.svg)](https://github.com/RobertoTorino/rpcs3-trr/actions/workflows/nightly-develop.yml)
 
 # RPCS3 Tekken Revolution Reborn Build Guide
 
