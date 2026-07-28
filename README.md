@@ -1,3 +1,5 @@
+[![Build TRR Release Package](https://github.com/RobertoTorino/rpcs3-trr/actions/workflows/release-package.yml/badge.svg)](https://github.com/RobertoTorino/rpcs3-trr/actions/workflows/release-package.yml)
+
 # RPCS3 Tekken Revolution Reborn Build Guide
 
 This repository currently contains two Windows build trees:
