@@ -91,6 +91,37 @@ jobs:
             throw "Vulkan SDK installation did not create C:\VulkanSDK"
           }
 
+      - name: Install prebuilt LLVM libraries
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $archivePath = Join-Path $env:RUNNER_TEMP "llvmlibs_mt.7z"
+          Invoke-WebRequest -Uri "https://github.com/RPCS3/llvm-mirror/releases/download/custom-build-win/llvmlibs_mt.7z" -OutFile $archivePath
+
+          7z x -y $archivePath "-o$env:GITHUB_WORKSPACE" | Out-Null
+
+          $llvmCandidates = @(
+            (Join-Path $env:GITHUB_WORKSPACE "llvm_build\\Release\\lib\\cmake\\llvm"),
+            (Join-Path $env:GITHUB_WORKSPACE "llvm_build\\lib\\cmake\\llvm"),
+            (Join-Path $env:GITHUB_WORKSPACE "llvm11-build\\Release\\lib\\cmake\\llvm"),
+            (Join-Path $env:GITHUB_WORKSPACE "llvm11-build\\lib\\cmake\\llvm")
+          )
+
+          $llvmDir = $null
+          foreach ($candidate in $llvmCandidates) {
+            if (Test-Path (Join-Path $candidate "LLVMConfig.cmake")) {
+              $llvmDir = $candidate
+              break
+            }
+          }
+
+          if (-not $llvmDir) {
+            throw "Could not locate LLVMConfig.cmake after extracting prebuilt LLVM archive."
+          }
+
+          "LLVM_DIR=$llvmDir" | Out-File -FilePath $env:GITHUB_ENV -Append
+
       - name: Build RPCS3 TRR (build-trr-release)
         shell: pwsh
         run: |
@@ -98,6 +129,7 @@ jobs:
             -BuildDir .\$env:BUILD_DIR `
             -Clean `
             -DeployQt `
+            -LLVMDir $env:LLVM_DIR `
             -QtRoot $env:QT6_ROOT `
             -Qt5Root $env:QT5_ROOT `
             -VulkanRoot C:\VulkanSDK
