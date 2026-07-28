@@ -15,8 +15,6 @@ jobs:
 
     env:
       BUILD_DIR: build-trr-release
-      QT6_ROOT: C:\Qt\6.7.3\msvc2022_64
-      QT5_ROOT: C:\Qt\5.15.2\msvc2019_64
 
     steps:
       - name: Checkout
@@ -41,25 +39,43 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install Qt 6.7.3 (MSVC 2022 x64)
-        uses: jurplel/install-qt-action@v4
-        with:
-          version: "6.7.3"
-          host: "windows"
-          target: "desktop"
-          arch: "win64_msvc2022_64"
-          dir: "C:/Qt"
-          cache: true
+      - name: Install Qt dependencies via aqt (with fallback)
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
 
-      - name: Install Qt 5.15.2 (MSVC 2019 x64)
-        uses: jurplel/install-qt-action@v4
-        with:
-          version: "5.15.2"
-          host: "windows"
-          target: "desktop"
-          arch: "win64_msvc2019_64"
-          dir: "C:/Qt"
-          cache: true
+          python -m pip install --upgrade pip
+          python -m pip install aqtinstall==3.3.0
+
+          $qt6Versions = @("6.7.3", "6.7.2", "6.6.3")
+          $qt6Root = $null
+          foreach ($ver in $qt6Versions) {
+            Write-Host "Trying Qt6 version: $ver"
+            try {
+              python -m aqt install-qt windows desktop $ver win64_msvc2022_64 --autodesktop --outputdir C:\Qt --base https://download.qt.io
+              $candidate = "C:\Qt\$ver\msvc2022_64"
+              if (Test-Path "$candidate\lib\cmake\Qt6\Qt6Config.cmake") {
+                $qt6Root = $candidate
+                break
+              }
+            }
+            catch {
+              Write-Warning "Qt6 $ver install failed, trying next fallback."
+            }
+          }
+
+          if (-not $qt6Root) {
+            throw "Could not install a usable Qt6 version from fallback list."
+          }
+
+          python -m aqt install-qt windows desktop 5.15.2 win64_msvc2019_64 --autodesktop --outputdir C:\Qt --base https://download.qt.io
+          $qt5Root = "C:\Qt\5.15.2\msvc2019_64"
+          if (-not (Test-Path "$qt5Root\lib\cmake\Qt5\Qt5Config.cmake")) {
+            throw "Qt5Config.cmake not found at $qt5Root"
+          }
+
+          "QT6_ROOT=$qt6Root" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "QT5_ROOT=$qt5Root" | Out-File -FilePath $env:GITHUB_ENV -Append
 
       - name: Ensure Vulkan SDK is available
         shell: pwsh
