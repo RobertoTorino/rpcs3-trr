@@ -226,6 +226,8 @@
     <addaction name="confEmuAct"/>
     <addaction name="confGuiAct"/>
     <addaction name="separator"/>
+    <addaction name="confCheatEngineAct"/>
+    <addaction name="separator"/>
     <addaction name="confRPCNAct"/>
     <addaction name="confAutopauseManagerAct"/>
    </widget>
@@ -259,6 +261,8 @@
     <addaction name="actionopen_rsx_capture"/>
     <addaction name="separator"/>
     <addaction name="actionCreate_RSX_Capture"/>
+    <addaction name="separator"/>
+    <addaction name="toolsRunCheatEngineAct"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
@@ -623,6 +627,11 @@
   <action name="toolsDecryptSprxLibsAct">
    <property name="text">
     <string>Decrypt PS3 Binaries</string>
+   </property>
+  </action>
+  <action name="toolsRunCheatEngineAct">
+   <property name="text">
+    <string>Run Cheat Engine</string>
    </property>
   </action>
   <action name="showDebuggerAct">
@@ -1100,6 +1109,11 @@
   <action name="actionManage_Game_Patches">
    <property name="text">
     <string>Game Patches</string>
+   </property>
+  </action>
+  <action name="confCheatEngineAct">
+   <property name="text">
+    <string>Cheat Engine</string>
    </property>
   </action>
   <action name="confRPCNAct">

@@ -9,6 +9,7 @@ set(SRC_FILES
 	call_stack_list.cpp
 	cg_disasm_window.cpp
 	cheat_manager.cpp
+	cheat_engine_dialog.cpp
 	config_adapter.cpp
 	curl_handle.cpp
 	custom_dialog.cpp

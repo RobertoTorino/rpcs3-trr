@@ -117,6 +117,8 @@ private Q_SLOTS:
 	void RemoveDiskCache();
 	void RemoveFirmwareCache();
 	void CreateFirmwareCache();
+	void ConfigureCheatEngine();
+	void RunCheatEngine();
 
 protected:
 	void closeEvent(QCloseEvent *event) override;

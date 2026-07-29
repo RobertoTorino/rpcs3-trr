@@ -14,6 +14,7 @@
 #include "settings_dialog.h"
 #include "rpcn_settings_dialog.h"
 #include "auto_pause_settings_dialog.h"
+#include "cheat_engine_dialog.h"
 #include "cg_disasm_window.h"
 #include "memory_string_searcher.h"
 #include "memory_viewer_panel.h"
@@ -37,8 +38,10 @@
 #include <QMimeData>
 #include <QMessageBox>
 #include <QFileDialog>
+#include <QFileInfo>
 #include <QRegularExpression>
 #include <QRegularExpressionValidator>
+#include <QProcess>
 
 #if defined(_WIN32) && defined(HAVE_QT_WINEXTRAS)
 #include <QWinTHumbnailToolbar>
@@ -1635,6 +1638,8 @@ void main_window::CreateConnects()
 
 	connect(ui->removeFirmwareCacheAct, &QAction::triggered, this, &main_window::RemoveFirmwareCache);
 	connect(ui->createFirmwareCacheAct, &QAction::triggered, this, &main_window::CreateFirmwareCache);
+	connect(ui->confCheatEngineAct, &QAction::triggered, this, &main_window::ConfigureCheatEngine);
+	connect(ui->toolsRunCheatEngineAct, &QAction::triggered, this, &main_window::RunCheatEngine);
 
 	connect(ui->sysPauseAct, &QAction::triggered, this, &main_window::OnPlayOrPause);
 	connect(ui->sysStopAct, &QAction::triggered, [this]() { Emu.Stop(); });
@@ -1962,6 +1967,39 @@ void main_window::CreateConnects()
 	});
 
 	connect(ui->mw_searchbar, &QLineEdit::textChanged, m_game_list_frame, &game_list_frame::SetSearchText);
+}
+
+void main_window::ConfigureCheatEngine()
+{
+	cheat_engine_dialog dlg(m_gui_settings->GetValue(gui::fd_cheat_engine).toString(), this);
+	if (dlg.exec() == QDialog::Accepted)
+	{
+		m_gui_settings->SetValue(gui::fd_cheat_engine, dlg.get_path());
+	}
+}
+
+void main_window::RunCheatEngine()
+{
+	QString cheat_engine_path = m_gui_settings->GetValue(gui::fd_cheat_engine).toString().trimmed();
+	QFileInfo cheat_engine_info(cheat_engine_path);
+
+	if (!cheat_engine_info.exists() || !cheat_engine_info.isFile())
+	{
+		ConfigureCheatEngine();
+		cheat_engine_path = m_gui_settings->GetValue(gui::fd_cheat_engine).toString().trimmed();
+		cheat_engine_info.setFile(cheat_engine_path);
+	}
+
+	if (!cheat_engine_info.exists() || !cheat_engine_info.isFile())
+	{
+		QMessageBox::warning(this, tr("Warning!"), tr("Cheat Engine is not configured or the executable path is invalid."));
+		return;
+	}
+
+	if (!QProcess::startDetached(cheat_engine_info.absoluteFilePath(), {}))
+	{
+		QMessageBox::warning(this, tr("Warning!"), tr("Failed to launch Cheat Engine."));
+	}
 }
 
 void main_window::CreateDockWindows()
