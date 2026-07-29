@@ -83,6 +83,10 @@ set_target_properties(rpcs3
 		AUTOMOC ON
 		AUTOUIC ON)
 
+if (NOT RPCS3_BRAND_SUFFIX STREQUAL "")
+	target_compile_definitions(rpcs3 PRIVATE RPCS3_BRAND_SUFFIX=${RPCS3_BRAND_SUFFIX})
+endif()
+
 target_link_libraries(rpcs3 rpcs3_emu rpcs3_ui)
 target_link_libraries(rpcs3 3rdparty::discord-rpc 3rdparty::qt5 3rdparty::hidapi 3rdparty::libusb 3rdparty::wolfssl)
 target_link_libraries(rpcs3 ${ADDITIONAL_LIBS})

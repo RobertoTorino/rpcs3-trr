@@ -25,11 +25,6 @@ option(USE_VULKAN "Vulkan render backend" ON)
 option(USE_PRECOMPILED_HEADERS "Use precompiled headers" ON)
 set(RPCS3_BRAND_SUFFIX "TRR" CACHE STRING "Optional brand suffix appended to displayed app/version names")
 
-if (NOT RPCS3_BRAND_SUFFIX STREQUAL "")
-	# Keep this as an unquoted token; code stringifies it in a compiler-portable way.
-	add_compile_definitions(RPCS3_BRAND_SUFFIX=${RPCS3_BRAND_SUFFIX})
-endif()
-
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/rpcs3/cmake_modules")
 
 set(CMAKE_CXX_STANDARD 20)

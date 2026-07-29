@@ -43,6 +43,14 @@ What this does:
 4. Configures and builds target `rpcs3`.
 5. Writes logs to `build-trr-release\build-logs\`.
 
+Fastest rebuild after the tree is already configured:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\build_rpcs3_binary.ps1 -BuildDir build-trr-release
+```
+
+Use `scripts\quick_build_rpcs3.ps1` only when you need to reconfigure or do a clean build.
+
 Output binary:
 
 * `build-trr-release\bin\rpcs3.exe`
@@ -78,9 +86,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\quick_build_rpcs3.
 
 All maintained build automation lives in `scripts/`:
 
-* `scripts/quick_build_rpcs3.ps1` - configure + build (recommended)
+* `scripts/quick_build_rpcs3.ps1` - configure + build, or use `-Clean` when you need a full reset
 * `scripts/configure_rpcs3.ps1` - configure only
-* `scripts/build_rpcs3_binary.ps1` - build only (configured tree required)
+* `scripts/build_rpcs3_binary.ps1` - build only (fastest path for an already configured tree)
 * `scripts/clean_rpcs3_build.ps1` - remove build directory
 
 Examples:

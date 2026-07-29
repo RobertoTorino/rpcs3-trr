@@ -43,6 +43,11 @@
 #include <QRegularExpressionValidator>
 #include <QProcess>
 
+#ifdef _WIN32
+#include <windows.h>
+#include <tlhelp32.h>
+#endif
+
 #if defined(_WIN32) && defined(HAVE_QT_WINEXTRAS)
 #include <QWinTHumbnailToolbar>
 #include <QWinTHumbnailToolbutton>
@@ -1082,6 +1087,7 @@ void main_window::RepaintToolBarIcons()
 	ui->toolbar_list    ->setIcon(icon(":/Icons/list.png"));
 	ui->toolbar_refresh ->setIcon(icon(":/Icons/refresh.png"));
 	ui->toolbar_stop    ->setIcon(icon(":/Icons/stop.png"));
+	ui->toolbar_kill_rpcs3->setIcon(icon(":/Icons/terminate.png"));
 
 	if (Emu.IsRunning())
 	{
@@ -1930,6 +1936,7 @@ void main_window::CreateConnects()
 	connect(ui->toolbar_open, &QAction::triggered, this, &main_window::BootGame);
 	connect(ui->toolbar_refresh, &QAction::triggered, [this]() { m_game_list_frame->Refresh(true); });
 	connect(ui->toolbar_stop, &QAction::triggered, [this]() { Emu.Stop(); });
+	connect(ui->toolbar_kill_rpcs3, &QAction::triggered, this, &main_window::KillRpcs3Processes);
 	connect(ui->toolbar_start, &QAction::triggered, this, &main_window::OnPlayOrPause);
 
 	connect(ui->toolbar_fullscreen, &QAction::triggered, [this]
@@ -2000,6 +2007,67 @@ void main_window::RunCheatEngine()
 	{
 		QMessageBox::warning(this, tr("Warning!"), tr("Failed to launch Cheat Engine."));
 	}
+}
+
+void main_window::KillRpcs3Processes()
+{
+#ifdef _WIN32
+	if (QMessageBox::question(this, tr("Terminate"), tr("Force-close all rpcs3.exe processes?\nThis will close RPCS3 immediately.")) != QMessageBox::Yes)
+	{
+		return;
+	}
+
+	const DWORD self_pid = GetCurrentProcessId();
+	bool should_kill_self = false;
+	int killed = 0;
+
+	const HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+	if (snapshot != INVALID_HANDLE_VALUE)
+	{
+		PROCESSENTRY32W entry{};
+		entry.dwSize = sizeof(entry);
+
+		if (Process32FirstW(snapshot, &entry))
+		{
+			do
+			{
+				const QString process_name = QString::fromWCharArray(entry.szExeFile);
+				if (process_name.compare(QStringLiteral("rpcs3.exe"), Qt::CaseInsensitive) != 0)
+				{
+					continue;
+				}
+
+				if (entry.th32ProcessID == self_pid)
+				{
+					should_kill_self = true;
+					continue;
+				}
+
+				if (HANDLE proc = OpenProcess(PROCESS_TERMINATE, FALSE, entry.th32ProcessID))
+				{
+					if (TerminateProcess(proc, 1))
+					{
+						++killed;
+					}
+					CloseHandle(proc);
+				}
+			}
+			while (Process32NextW(snapshot, &entry));
+		}
+
+		CloseHandle(snapshot);
+	}
+
+	if (should_kill_self)
+	{
+		TerminateProcess(GetCurrentProcess(), 1);
+		return;
+	}
+
+	QMessageBox::information(this, tr("Kill Result"), tr("Killed %0 rpcs3.exe process(es).").arg(killed));
+#else
+	QMessageBox::information(this, tr("Not Supported"), tr("This action is only available on Windows."));
+#endif
 }
 
 void main_window::CreateDockWindows()

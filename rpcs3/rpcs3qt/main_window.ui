@@ -382,6 +382,7 @@
    <addaction name="toolbar_refresh"/>
    <addaction name="toolbar_fullscreen"/>
    <addaction name="toolbar_stop"/>
+  <addaction name="toolbar_kill_rpcs3"/>
    <addaction name="toolbar_start"/>
    <addaction name="toolbar_config"/>
    <addaction name="toolbar_controls"/>
@@ -907,6 +908,18 @@
    </property>
    <property name="toolTip">
     <string>Stop emulation</string>
+   </property>
+  </action>
+  <action name="toolbar_kill_rpcs3">
+   <property name="icon">
+    <iconset resource="../resources.qrc">
+     <normaloff>:/Icons/terminate.png</normaloff>:/Icons/terminate.png</iconset>
+   </property>
+   <property name="text">
+    <string>Terminate</string>
+   </property>
+   <property name="toolTip">
+    <string>Terminate all rpcs3.exe processes</string>
    </property>
   </action>
   <action name="toolbar_config">

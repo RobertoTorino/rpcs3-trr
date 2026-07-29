@@ -119,6 +119,7 @@ private Q_SLOTS:
 	void CreateFirmwareCache();
 	void ConfigureCheatEngine();
 	void RunCheatEngine();
+	void KillRpcs3Processes();
 
 protected:
 	void closeEvent(QCloseEvent *event) override;
