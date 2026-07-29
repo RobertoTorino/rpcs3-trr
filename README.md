@@ -46,6 +46,21 @@ What this does:
 Output binary:
 
 * `build-trr-release\bin\rpcs3.exe`
+* Make sure `qt.conf` and `OpenAL32.dll` are also there.
+
+Exact Windows-friendly CMake CLI equivalent (from repo root):
+
+```powershell
+cmake --fresh -S . -B .\build-trr-release -G "Visual Studio 17 2022" -A x64 -T "v143,host=x64" -DCMAKE_VS_PLATFORM_TOOLSET=v143 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_STANDARD_REQUIRED=ON -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL -DABSL_PROPAGATE_CXX_STD=OFF -DCMAKE_POLICY_VERSION_MINIMUM:STRING=3.16 -DCMAKE_PREFIX_PATH="C:\Qt\6.11.1\msvc2022_64" -DQt6_DIR="C:\Qt\6.11.1\msvc2022_64\lib\cmake\Qt6" -DQTDIR="C:\Qt\6.11.1\msvc2022_64" -DVULKAN_SDK="C:\VulkanSDK\1.4.350.0" -DUSE_SYSTEM_ZLIB=OFF -DUSE_SYSTEM_SDL=OFF -DUSE_SYSTEM_CURL=OFF -DUSE_SYSTEM_OPENCV=OFF -DUSE_ALSA=OFF -DUSE_PULSE=OFF -DUSE_LIBEVDEV=OFF -DYAML_MSVC_SHARED_RT=ON -DALSOFT_ENABLE_MODULES=OFF -DWITH_LLVM=ON -DBUILD_LLVM_SUBMODULE=OFF -DLLVM_DIR="C:\path\to\llvm\lib\cmake\llvm" -DLLVM_ENABLE_DIA_SDK=OFF
+
+cmake --build .\build-trr-release --config Release --target rpcs3 --parallel
+```
+
+Notes:
+
+1. If you use LLVM source in `llvm\` instead of prebuilt LLVM, replace `-DBUILD_LLVM_SUBMODULE=OFF -DLLVM_DIR=...` with `-DBUILD_LLVM_SUBMODULE=ON`.
+2. `-DUSE_ALSA=OFF -DUSE_PULSE=OFF -DUSE_LIBEVDEV=OFF` avoids Linux-only dependency probes on Windows.
+3. On MSVC, Discord RPC is built from source with `USE_STATIC_CRT=OFF`, which matches the app's `/MD` runtime model.
 
 Optional deploy step for Qt runtime files:
 

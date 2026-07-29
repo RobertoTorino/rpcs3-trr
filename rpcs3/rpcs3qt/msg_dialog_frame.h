@@ -6,7 +6,7 @@
 #include <QProgressBar>
 #include <QLabel>
 
-#ifdef _WIN32
+#if defined(_WIN32) && defined(HAVE_QT_WINEXTRAS)
 #include <QWinTaskbarProgress>
 #include <QWinTaskbarButton>
 #endif
@@ -18,7 +18,7 @@ class msg_dialog_frame : public QObject, public MsgDialogBase
 	Q_OBJECT
 
 private:
-#ifdef _WIN32
+#if defined(_WIN32) && defined(HAVE_QT_WINEXTRAS)
 	QWinTaskbarButton* m_tb_button = nullptr;
 	QWinTaskbarProgress* m_tb_progress = nullptr;
 #elif HAVE_QTDBUS

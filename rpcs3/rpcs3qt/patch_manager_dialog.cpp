@@ -194,7 +194,7 @@ void patch_manager_dialog::populate_tree()
 {
 	// "Reset" currently used items. Items that aren't persisted will be removed later.
 	// Using this logic instead of clearing the tree here should persist the expanded status of items.
-	for (auto item : ui->patch_tree->findItems(".*", Qt::MatchFlag::MatchRegExp | Qt::MatchFlag::MatchRecursive))
+	for (auto item : ui->patch_tree->findItems(".*", Qt::MatchFlag::MatchRegularExpression | Qt::MatchFlag::MatchRecursive))
 	{
 		if (item)
 		{
@@ -430,7 +430,7 @@ void patch_manager_dialog::filter_patches(const QString& term)
 	};
 
 	// Go through each top level item and try to find matches
-	for (auto top_level_item : ui->patch_tree->findItems(".*", Qt::MatchRegExp))
+	for (auto top_level_item : ui->patch_tree->findItems(".*", Qt::MatchFlag::MatchRegularExpression))
 	{
 		show_matches(top_level_item, false);
 	}
@@ -704,7 +704,7 @@ bool patch_manager_dialog::is_valid_file(const QMimeData& md, QStringList* drop_
 	for (auto&& url : list) // Check each file in url list for valid type
 	{
 		const QString path   = url.toLocalFile(); // Convert url to filepath
-		const QFileInfo info = path;
+		const QFileInfo info(path);
 
 		if (!info.fileName().endsWith("patch.yml"))
 		{

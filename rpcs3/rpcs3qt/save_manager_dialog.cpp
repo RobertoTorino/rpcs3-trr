@@ -31,8 +31,7 @@ namespace
 
 	QString FormatTimestamp(u64 time)
 	{
-		QDateTime dateTime;
-		dateTime.setTime_t(time);
+		QDateTime dateTime = QDateTime::fromSecsSinceEpoch(static_cast<qint64>(time));
 		return dateTime.toString("yyyy-MM-dd HH:mm:ss");
 	}
 

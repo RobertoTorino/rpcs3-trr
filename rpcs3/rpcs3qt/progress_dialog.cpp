@@ -3,7 +3,7 @@
 #include <QCoreApplication>
 #include <QLabel>
 
-#ifdef _WIN32
+#if defined(_WIN32) && defined(HAVE_QT_WINEXTRAS)
 #include <QWinTHumbnailToolbar>
 #include <QWinTHumbnailToolbutton>
 #elif HAVE_QTDBUS
@@ -24,7 +24,7 @@ progress_dialog::progress_dialog(const QString &windowTitle, const QString &labe
 		connect(this, &QProgressDialog::canceled, this, &QProgressDialog::deleteLater);
 	}
 
-#ifdef _WIN32
+#if defined(_WIN32) && defined(HAVE_QT_WINEXTRAS)
 	m_tb_button = std::make_unique<QWinTaskbarButton>();
 	m_tb_button->setWindow(parent ? parent->windowHandle() : windowHandle());
 	m_tb_progress = m_tb_button->progress();
@@ -37,7 +37,7 @@ progress_dialog::progress_dialog(const QString &windowTitle, const QString &labe
 
 progress_dialog::~progress_dialog()
 {
-#ifdef _WIN32
+#if defined(_WIN32) && defined(HAVE_QT_WINEXTRAS)
 	// QWinTaskbarProgress::hide() will crash if the application is already about to close, even if the object is not null.
 	if (!QCoreApplication::closingDown())
 	{
@@ -52,7 +52,7 @@ void progress_dialog::SetValue(int progress)
 {
 	const int value = std::clamp(progress, minimum(), maximum());
 
-#ifdef _WIN32
+#if defined(_WIN32) && defined(HAVE_QT_WINEXTRAS)
 	m_tb_progress->setValue(value);
 #elif HAVE_QTDBUS
 	UpdateProgress(value);
@@ -63,7 +63,7 @@ void progress_dialog::SetValue(int progress)
 
 void progress_dialog::SignalFailure()
 {
-#ifdef _WIN32
+#if defined(_WIN32) && defined(HAVE_QT_WINEXTRAS)
 	m_tb_progress->stop();
 #endif
 	// TODO: Implement an equivalent for Linux, if possible

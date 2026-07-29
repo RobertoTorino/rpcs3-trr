@@ -235,27 +235,34 @@ add_library(3rdparty_discord-rpc INTERFACE)
 
 # We don't want Discord Rich Presence on the BSDs and other OSes
 if (USE_DISCORD_RPC AND (WIN32 OR CMAKE_SYSTEM MATCHES "Linux" OR APPLE))
-	if (WIN32 AND MSVC)
-		message(WARNING "USE_DISCORD_RPC is enabled, but bundled discord-rpc.lib is built with /MT and is incompatible with this /MD build. Discord RPC will be disabled for this build.")
-	else()
-	if (WIN32 AND NOT MSVC)
-		ExternalProject_Add(discord-rpc
-				GIT_REPOSITORY https://github.com/discordapp/discord-rpc
-				BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/discord-rpc
-				INSTALL_COMMAND ""
-			)
-
-	endif()
-
 	target_include_directories(3rdparty_discord-rpc INTERFACE discord-rpc/include)
 	target_compile_definitions(3rdparty_discord-rpc INTERFACE -DWITH_DISCORD_RPC)
 
 	set(DISCORD_RPC_LIB NOTFOUND)
 	if (WIN32)
-		if (NOT MSVC)
-			set(DISCORD_RPC_LIB ${CMAKE_CURRENT_BINARY_DIR}/discord-rpc/src/libdiscord-rpc.a)
+		if (MSVC)
+			message(STATUS "-- RPCS3: building Discord RPC with MSVC runtime compatibility (/MD)")
+			ExternalProject_Add(discord-rpc
+				GIT_REPOSITORY https://github.com/discordapp/discord-rpc
+				GIT_TAG master
+				BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/discord-rpc
+				CMAKE_ARGS
+					-DCMAKE_POLICY_VERSION_MINIMUM:STRING=3.16
+					-DBUILD_EXAMPLES=OFF
+					-DUSE_STATIC_CRT=OFF
+				INSTALL_COMMAND ""
+			)
+			set(DISCORD_RPC_LIB ${CMAKE_CURRENT_BINARY_DIR}/discord-rpc/src/$<CONFIG>/discord-rpc.lib)
+			add_dependencies(3rdparty_discord-rpc discord-rpc)
 		else()
-			find_library(DISCORD_RPC_LIB discord-rpc PATHS discord-rpc/lib/ NO_DEFAULT_PATH)
+			ExternalProject_Add(discord-rpc
+				GIT_REPOSITORY https://github.com/discordapp/discord-rpc
+				BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/discord-rpc
+				INSTALL_COMMAND ""
+			)
+
+			set(DISCORD_RPC_LIB ${CMAKE_CURRENT_BINARY_DIR}/discord-rpc/src/libdiscord-rpc.a)
+			add_dependencies(3rdparty_discord-rpc discord-rpc)
 		endif()
 	elseif(CMAKE_SYSTEM MATCHES "Linux")
 		find_library(DISCORD_RPC_LIB discord-rpc-linux PATHS discord-rpc/lib/ NO_DEFAULT_PATH)
@@ -265,7 +272,6 @@ if (USE_DISCORD_RPC AND (WIN32 OR CMAKE_SYSTEM MATCHES "Linux" OR APPLE))
 	target_link_libraries(3rdparty_discord-rpc INTERFACE ${DISCORD_RPC_LIB})
 	if(APPLE)
 		target_link_libraries(3rdparty_discord-rpc INTERFACE "objc" "-framework Foundation" "-framework CoreServices")
-	endif()
 	endif()
 endif()
 

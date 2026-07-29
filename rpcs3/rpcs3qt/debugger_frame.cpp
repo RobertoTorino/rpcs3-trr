@@ -24,6 +24,7 @@
 #include <QFontDatabase>
 #include <QCompleter>
 #include <QMenu>
+#include <QRegularExpression>
 #include <QVBoxLayout>
 #include <QTimer>
 
@@ -642,7 +643,7 @@ u64 debugger_frame::EvaluateExpression(const QString& expression)
 	if (!thread) return 0;
 
 	// Parse expression(or at least used to, was nuked to remove the need for QtJsEngine)
-	const QString fixed_expression = QRegExp("^[A-Fa-f0-9]+$").exactMatch(expression) ? "0x" + expression : expression;
+	const QString fixed_expression = QRegularExpression("^[A-Fa-f0-9]+$").match(expression).hasMatch() ? "0x" + expression : expression;
 	return static_cast<ulong>(fixed_expression.toULong(nullptr, 0));
 }
 

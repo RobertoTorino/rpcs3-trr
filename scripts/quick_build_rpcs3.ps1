@@ -5,7 +5,6 @@ param(
     [string]$BuildConfig = "Release",
     [string]$Toolset = "v143,host=x64",
     [string]$QtRoot = "C:\Qt\6.11.1\msvc2022_64",
-    [string]$Qt5Root = "",
     [string]$VulkanRoot = "C:\VulkanSDK",
     [string]$LLVMDir = $env:LLVM_DIR,
     [int]$MaxRetries = 3,
@@ -157,56 +156,6 @@ function Resolve-LlvmSetup {
     throw "No valid LLVM 11 setup was found. Provide -LLVMDir pointing to LLVMConfig.cmake, or place LLVM 11 sources under '$RepoRoot\llvm11-project\llvm' or build output in '$RepoRoot\llvm11-build'."
 }
 
-function Resolve-Qt5Root {
-    param(
-        [string]$Preferred,
-        [string]$QtRootCandidate
-    )
-
-    $candidates = @()
-
-    if (-not [string]::IsNullOrWhiteSpace($Preferred)) {
-        $candidates += $Preferred
-    }
-
-    if (-not [string]::IsNullOrWhiteSpace($env:QTDIR)) {
-        $candidates += $env:QTDIR
-    }
-
-    $candidates += @(
-        "C:\Qt\5.15.2\msvc2022_64",
-        "C:\Qt\5.15.2\msvc2019_64"
-    )
-
-    if (Test-Path "C:\Qt") {
-        $qtVersionDirs = Get-ChildItem -Path "C:\Qt" -Directory -ErrorAction SilentlyContinue |
-            Where-Object { $_.Name -like "5.*" } |
-            Sort-Object Name -Descending
-
-        foreach ($versionDir in $qtVersionDirs) {
-            $kitDirs = Get-ChildItem -Path $versionDir.FullName -Directory -ErrorAction SilentlyContinue |
-                Where-Object { $_.Name -like "msvc*_64" } |
-                Sort-Object Name -Descending
-
-            foreach ($kit in $kitDirs) {
-                $candidates += $kit.FullName
-            }
-        }
-    }
-
-    foreach ($candidate in $candidates) {
-        if ([string]::IsNullOrWhiteSpace($candidate)) {
-            continue
-        }
-
-        if (Test-Path (Join-Path $candidate "lib\cmake\Qt5\Qt5Config.cmake")) {
-            return $candidate
-        }
-    }
-
-    return ""
-}
-
 $Root = [System.IO.Path]::GetFullPath($Root)
 if (-not $BuildDir) {
     $BuildDir = Join-Path $Root "build-windows-release"
@@ -239,18 +188,6 @@ $env:CMAKE_PREFIX_PATH = $QtRoot
 $env:VULKAN_SDK = $vulkanSdk
 $env:PATH = (Join-Path $QtRoot "bin") + ";" + (Join-Path $vulkanSdk "Bin") + ";" + $env:PATH
 
-$qt5ConfigPath = Join-Path $Root "3rdparty\qt5.cmake"
-$qt5DetectedRoot = ""
-if (Test-Path $qt5ConfigPath) {
-    $qt5DetectedRoot = Resolve-Qt5Root -Preferred $Qt5Root -QtRootCandidate $QtRoot
-
-    if ([string]::IsNullOrWhiteSpace($qt5DetectedRoot)) {
-        throw "This repository requires Qt5 (detected via '$qt5ConfigPath'), but no Qt5Config.cmake was found. Provide -Qt5Root (for example C:\Qt\5.15.2\msvc2019_64)."
-    }
-
-    $env:Qt5_DIR = Join-Path $qt5DetectedRoot "lib\cmake\Qt5"
-}
-
 Write-Host "`n=========================================" -ForegroundColor Cyan
 Write-Host " RPCS3 Build Configuration" -ForegroundColor Cyan
 Write-Host "=========================================" -ForegroundColor Cyan
@@ -258,9 +195,6 @@ Write-Host "Generator   : $generator"
 Write-Host "Build dir   : $BuildDir"
 Write-Host "Toolset     : $Toolset"
 Write-Host "Qt root     : $QtRoot"
-if (-not [string]::IsNullOrWhiteSpace($qt5DetectedRoot)) {
-    Write-Host "Qt5 root    : $qt5DetectedRoot"
-}
 Write-Host "Vulkan SDK  : $vulkanSdk"
 Write-Host "LLVM mode   : $($llvmSetup.Mode)"
 
@@ -286,11 +220,6 @@ $helperArgs = @{
 
 if (-not [string]::IsNullOrWhiteSpace($llvmSetup.LLVMDir)) {
     $helperArgs.LLVMDir = $llvmSetup.LLVMDir
-}
-
-if (-not [string]::IsNullOrWhiteSpace($qt5DetectedRoot)) {
-    $helperArgs.Qt5Root = $qt5DetectedRoot
-    $helperArgs.Qt5Dir = (Join-Path $qt5DetectedRoot "lib\cmake\Qt5")
 }
 
 & powershell -NoProfile -ExecutionPolicy Bypass -File $helper @helperArgs

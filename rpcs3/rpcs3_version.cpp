@@ -7,6 +7,9 @@
 #define RPCS3_BRAND_SUFFIX ""
 #endif
 
+#define RPCS3_STR_IMPL(x) #x
+#define RPCS3_STR(x) RPCS3_STR_IMPL(x)
+
 namespace rpcs3
 {
 	std::string_view get_branch()
@@ -39,7 +42,7 @@ namespace rpcs3
 	std::string get_version_with_branding()
 	{
 		std::string version = get_version().to_string();
-		constexpr std::string_view suffix = RPCS3_BRAND_SUFFIX;
+		constexpr std::string_view suffix = RPCS3_STR(RPCS3_BRAND_SUFFIX);
 
 		if (!suffix.empty())
 		{
@@ -53,7 +56,7 @@ namespace rpcs3
 	std::string get_application_name()
 	{
 		std::string name = "RPCS3";
-		constexpr std::string_view suffix = RPCS3_BRAND_SUFFIX;
+		constexpr std::string_view suffix = RPCS3_STR(RPCS3_BRAND_SUFFIX);
 
 		if (!suffix.empty())
 		{
@@ -82,7 +85,7 @@ namespace rpcs3
 			version = version.substr(0, last_minus);
 		}
 
-		constexpr std::string_view suffix = RPCS3_BRAND_SUFFIX;
+		constexpr std::string_view suffix = RPCS3_STR(RPCS3_BRAND_SUFFIX);
 		if (!suffix.empty())
 		{
 			version += " ";

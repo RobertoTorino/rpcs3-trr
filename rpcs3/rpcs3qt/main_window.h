@@ -1,8 +1,13 @@
 #pragma once
 
-#ifdef _WIN32
+#if defined(_WIN32) && defined(HAVE_QT_WINEXTRAS)
 #include <QWinTHumbnailToolbar>
 #include <QWinTHumbnailToolbutton>
+#endif
+
+#ifdef _WIN32
+class QWinThumbnailToolBar;
+class QWinThumbnailToolButton;
 #endif
 
 #include <QActionGroup>
@@ -59,8 +64,8 @@ class main_window : public QMainWindow
 	QWinThumbnailToolButton *m_thumb_playPause = nullptr;
 	QWinThumbnailToolButton *m_thumb_stop = nullptr;
 	QWinThumbnailToolButton *m_thumb_restart = nullptr;
-	QStringList m_vulkan_adapters;
 #endif
+	QStringList m_vulkan_adapters;
 
 	enum class drop_type
 	{

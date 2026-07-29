@@ -37,7 +37,11 @@ void screenshot_preview::show_context_menu(const QPoint & pos)
 	menu->addSeparator();
 
 	QAction* reset_act = menu->addAction(tr("To &Normal Size"), [this]() { scale(m_image.size()); });
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+	reset_act->setEnabled(pixmap().size() != m_image.size());
+#else
 	reset_act->setEnabled(pixmap()->size() != m_image.size());
+#endif
 
 	QAction* stretch_act = menu->addAction(tr("&Stretch to size"), [this]() { m_stretch = !m_stretch; scale(size()); });
 	stretch_act->setCheckable(true);

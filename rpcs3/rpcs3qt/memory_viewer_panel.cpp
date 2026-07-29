@@ -12,6 +12,8 @@
 #include <QGroupBox>
 #include <QTextEdit>
 #include <QComboBox>
+#include <QRegularExpression>
+#include <QRegularExpressionValidator>
 #include <QWheelEvent>
 #include <shared_mutex>
 
@@ -56,7 +58,7 @@ memory_viewer_panel::memory_viewer_panel(QWidget* parent, u32 addr)
 	m_addr_line->setMaxLength(10);
 	m_addr_line->setFixedWidth(75);
 	m_addr_line->setFocus();
-	m_addr_line->setValidator(new QRegExpValidator(QRegExp("^([0][xX])?[a-fA-F0-9]{0,8}$")));
+	m_addr_line->setValidator(new QRegularExpressionValidator(QRegularExpression("^([0][xX])?[a-fA-F0-9]{0,8}$")));
 	hbox_tools_mem_addr->addWidget(m_addr_line);
 	tools_mem_addr->setLayout(hbox_tools_mem_addr);
 

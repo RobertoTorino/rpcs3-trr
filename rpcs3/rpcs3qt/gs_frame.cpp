@@ -31,7 +31,7 @@
 #endif
 #endif
 
-#ifdef _WIN32
+#if defined(_WIN32) && defined(HAVE_QT_WINEXTRAS)
 #include <QWinTHumbnailToolbar>
 #include <QWinTHumbnailToolbutton>
 #elif HAVE_QTDBUS
@@ -90,7 +90,7 @@ gs_frame::gs_frame(const QRect& geometry, const QIcon& appIcon, const std::share
 	connect(&m_mousehide_timer, &QTimer::timeout, this, &gs_frame::MouseHideTimeout);
 	m_mousehide_timer.setSingleShot(true);
 
-#ifdef _WIN32
+#if defined(_WIN32) && defined(HAVE_QT_WINEXTRAS)
 	m_tb_button = new QWinTaskbarButton();
 	m_tb_progress = m_tb_button->progress();
 	m_tb_progress->setRange(0, m_gauge_max);
@@ -104,7 +104,7 @@ gs_frame::gs_frame(const QRect& geometry, const QIcon& appIcon, const std::share
 
 gs_frame::~gs_frame()
 {
-#ifdef _WIN32
+#if defined(_WIN32) && defined(HAVE_QT_WINEXTRAS)
 	// QWinTaskbarProgress::hide() will crash if the application is already about to close, even if the object is not null.
 	if (m_tb_progress && !QCoreApplication::closingDown())
 	{
@@ -314,7 +314,7 @@ void gs_frame::show()
 		}
 	});
 
-#ifdef _WIN32
+#if defined(_WIN32) && defined(HAVE_QT_WINEXTRAS)
 	// if we do this before show, the QWinTaskbarProgress won't show
 	if (m_tb_button)
 	{
@@ -616,7 +616,7 @@ bool gs_frame::event(QEvent* ev)
 
 void gs_frame::progress_reset(bool reset_limit)
 {
-#ifdef _WIN32
+#if defined(_WIN32) && defined(HAVE_QT_WINEXTRAS)
 	if (m_tb_progress)
 	{
 		m_tb_progress->reset();
@@ -638,7 +638,7 @@ void gs_frame::progress_increment(int delta)
 		return;
 	}
 
-#ifdef _WIN32
+#if defined(_WIN32) && defined(HAVE_QT_WINEXTRAS)
 	if (m_tb_progress)
 	{
 		m_tb_progress->setValue(std::clamp(m_tb_progress->value() + delta, m_tb_progress->minimum(), m_tb_progress->maximum()));
@@ -651,7 +651,7 @@ void gs_frame::progress_increment(int delta)
 
 void gs_frame::progress_set_limit(int limit)
 {
-#ifdef _WIN32
+#if defined(_WIN32) && defined(HAVE_QT_WINEXTRAS)
 	if (m_tb_progress)
 	{
 		m_tb_progress->setMaximum(limit);

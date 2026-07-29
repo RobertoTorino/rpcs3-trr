@@ -5,7 +5,7 @@
 #include <QPushButton>
 #include <QFormLayout>
 
-#ifdef _WIN32
+#if defined(_WIN32) && defined(HAVE_QT_WINEXTRAS)
 #include <QWinTHumbnailToolbar>
 #include <QWinTHumbnailToolbutton>
 #elif HAVE_QTDBUS
@@ -61,7 +61,7 @@ void msg_dialog_frame::Create(const std::string& msg, const std::string& title)
 	{
 		l_AddGauge(m_gauge1, m_text1);
 
-#ifdef _WIN32
+#if defined(_WIN32) && defined(HAVE_QT_WINEXTRAS)
 		m_tb_button = new QWinTaskbarButton();
 		m_tb_progress = m_tb_button->progress();
 		m_tb_progress->setRange(0, 100);
@@ -154,7 +154,7 @@ void msg_dialog_frame::Create(const std::string& msg, const std::string& title)
 	m_dialog->layout()->setSizeConstraint(QLayout::SetFixedSize);
 	m_dialog->show();
 
-#ifdef _WIN32
+#if defined(_WIN32) && defined(HAVE_QT_WINEXTRAS)
 	// if we do this before, the QWinTaskbarProgress won't show
 	if (m_tb_button) m_tb_button->setWindow(m_dialog->windowHandle());
 #endif
@@ -173,7 +173,7 @@ msg_dialog_frame::msg_dialog_frame() {}
 
 msg_dialog_frame::~msg_dialog_frame()
 {
-#ifdef _WIN32
+#if defined(_WIN32) && defined(HAVE_QT_WINEXTRAS)
 	// QWinTaskbarProgress::hide() will crash if the application is already about to close, even if the object is not null.
 	if (m_tb_progress && !QCoreApplication::closingDown())
 	{
@@ -229,7 +229,7 @@ void msg_dialog_frame::ProgressBarReset(u32 index)
 
 	if (index == taskbar_index + 0u)
 	{
-#ifdef _WIN32
+#if defined(_WIN32) && defined(HAVE_QT_WINEXTRAS)
 		if (m_tb_progress)
 		{
 			m_tb_progress->reset();
@@ -259,7 +259,7 @@ void msg_dialog_frame::ProgressBarInc(u32 index, u32 delta)
 
 	if (index == taskbar_index + 0u || taskbar_index == -1)
 	{
-#ifdef _WIN32
+#if defined(_WIN32) && defined(HAVE_QT_WINEXTRAS)
 		if (m_tb_progress)
 		{
 			m_tb_progress->setValue(std::min(m_tb_progress->value() + static_cast<int>(delta), m_tb_progress->maximum()));
@@ -301,7 +301,7 @@ void msg_dialog_frame::ProgressBarSetLimit(u32 index, u32 limit)
 		set_taskbar_limit = true;
 	}
 
-#ifdef _WIN32
+#if defined(_WIN32) && defined(HAVE_QT_WINEXTRAS)
 	if (set_taskbar_limit && m_tb_progress)
 	{
 		m_tb_progress->setMaximum(m_gauge_max);

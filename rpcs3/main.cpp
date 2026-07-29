@@ -454,7 +454,7 @@ int main(int argc, char** argv)
 
 	// Command line args
 	QCommandLineParser parser;
-	parser.setApplicationDescription("Welcome to RPCS3 command line.");
+	parser.setApplicationDescription("Welcome to RPCS3 for TRR command line.");
 	parser.addPositionalArgument("(S)ELF", "Path for directly executing a (S)ELF");
 	parser.addPositionalArgument("[Args...]", "Optional args for the executable");
 
@@ -498,7 +498,9 @@ int main(int argc, char** argv)
 	if (auto gui_app = qobject_cast<gui_application*>(app.data()))
 	{
 		gui_app->setAttribute(Qt::AA_UseHighDpiPixmaps);
+	#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 		gui_app->setAttribute(Qt::AA_DisableWindowContextHelpButton);
+	#endif
 		gui_app->setAttribute(Qt::AA_DontCheckOpenGLContextThreadAffinity);
 
 		gui_app->SetShowGui(!parser.isSet(arg_no_gui));

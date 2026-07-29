@@ -173,6 +173,12 @@ $BuildDir = [System.IO.Path]::GetFullPath($BuildDir)
 $LogDir = Join-Path $BuildDir "build-logs"
 New-Item -ItemType Directory -Path $LogDir -Force | Out-Null
 
+$clCmd = Get-Command cl.exe -ErrorAction SilentlyContinue
+if ($clCmd) {
+    $env:CC = $clCmd.Source
+    $env:CXX = $clCmd.Source
+}
+
 # CMake 4 + Qt package files fail if this resolves to a major-only value like "3".
 # Pin it to a valid major.minor and pass the same value in configure args.
 $env:CMAKE_POLICY_VERSION_MINIMUM = "3.16"
@@ -180,15 +186,28 @@ $env:CMAKE_POLICY_VERSION_MINIMUM = "3.16"
 $cmakePrefixPath = $QtRoot
 if (-not [string]::IsNullOrWhiteSpace($Qt5Root)) {
     $cmakePrefixPath = $Qt5Root
+
+    # Ensure Qt5 deployment tools resolve Qt5 runtime DLLs from the Qt5 install first.
+    $qt5Bin = Join-Path $Qt5Root "bin"
+    if (Test-Path $qt5Bin) {
+        $env:PATH = $qt5Bin + ";" + $env:PATH
+    }
+}
+
+$qtDirForBuild = $QtRoot
+if (-not [string]::IsNullOrWhiteSpace($Qt5Root)) {
+    $qtDirForBuild = $Qt5Root
 }
 
 $isVisualStudioGenerator = $Generator -like "Visual Studio*"
+$platformToolsetName = ($Toolset -split ",")[0]
 
 $configureArgs = @(
     "--fresh",
     "-S", $Root,
     "-B", $BuildDir,
     "-G", $Generator,
+    "-DCMAKE_BUILD_TYPE=$BuildConfig",
     "-DCMAKE_CXX_STANDARD=20",
     "-DCMAKE_CXX_STANDARD_REQUIRED=ON",
     "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL",
@@ -196,12 +215,15 @@ $configureArgs = @(
     "-DCMAKE_PREFIX_PATH=$cmakePrefixPath",
     "-DCMAKE_POLICY_VERSION_MINIMUM:STRING=3.16",
     "-DQt6_DIR=$Qt6Dir",
-    "-DQTDIR=$QtRoot",
+    "-DQTDIR=$qtDirForBuild",
     "-DVULKAN_SDK=$VulkanSdk",
     "-DUSE_SYSTEM_ZLIB=OFF",
     "-DUSE_SYSTEM_SDL=OFF",
     "-DUSE_SYSTEM_CURL=OFF",
     "-DUSE_SYSTEM_OPENCV=OFF",
+    "-DUSE_ALSA=OFF",
+    "-DUSE_PULSE=OFF",
+    "-DUSE_LIBEVDEV=OFF",
     "-DYAML_MSVC_SHARED_RT=ON",
     "-DALSOFT_ENABLE_MODULES=OFF",
     "-DWITH_LLVM=ON",
@@ -209,10 +231,18 @@ $configureArgs = @(
     "-DLLVM_ENABLE_DIA_SDK=OFF"
 )
 
+if ($clCmd) {
+    $configureArgs += @(
+        "-DCMAKE_C_COMPILER=$($clCmd.Source)",
+        "-DCMAKE_CXX_COMPILER=$($clCmd.Source)"
+    )
+}
+
 if ($isVisualStudioGenerator) {
     $configureArgs += @(
         "-A", "x64",
-        "-T", $Toolset
+        "-T", $Toolset,
+        "-DCMAKE_VS_PLATFORM_TOOLSET=$platformToolsetName"
     )
 }
 

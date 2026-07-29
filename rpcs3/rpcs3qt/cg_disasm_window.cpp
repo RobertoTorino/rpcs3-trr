@@ -82,7 +82,7 @@ void cg_disasm_window::ShowContextMenu(const QPoint &pos)
 	connect(open, &QAction::triggered, [this]()
 	{
 		QString filePath = QFileDialog::getOpenFileName(this, tr("Select Cg program object"), m_path_last, tr("Cg program objects (*.fpo;*.vpo);;"));
-		if (filePath == NULL) return;
+		if (filePath.isEmpty()) return;
 		m_path_last = filePath;
 		ShowDisasm();
 	});
@@ -134,7 +134,7 @@ bool cg_disasm_window::IsValidFile(const QMimeData& md, bool save)
 
 	const QString suff = QFileInfo(urls[0].fileName()).suffix().toLower();
 
-	if (suff == "fpo" || suff == "vpo")
+	if (suff == QStringLiteral("fpo") || suff == QStringLiteral("vpo"))
 	{
 		if (save)
 		{

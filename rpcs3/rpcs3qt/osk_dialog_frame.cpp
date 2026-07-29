@@ -8,7 +8,8 @@
 #include <QHBoxLayout>
 #include <QFormLayout>
 #include <QPushButton>
-#include <QRegExpValidator>
+#include <QRegularExpression>
+#include <QRegularExpressionValidator>
 
 constexpr auto qstr = QString::fromStdString;
 
@@ -74,7 +75,7 @@ void osk_dialog_frame::Create(const std::string& title, const std::u16string& me
 
 		if (prohibit_flags & CELL_OSKDIALOG_NO_SPACE)
 		{
-			input->setValidator(new QRegExpValidator(QRegExp("^\\S*$"), this));
+			input->setValidator(new QRegularExpressionValidator(QRegularExpression("^\\S*$"), this));
 		}
 
 		connect(input, &QLineEdit::textChanged, [=, this](const QString& text)
@@ -126,7 +127,7 @@ void osk_dialog_frame::Create(const std::string& title, const std::u16string& me
 			if (prohibit_flags & CELL_OSKDIALOG_NO_SPACE)
 			{
 				int trim_len = text.length();
-				text.remove(QRegExp("\\s+"));
+				text.remove(QRegularExpression("\\s+"));
 				trim_len -= text.length();
 				cursor_pos -= trim_len;
 			}
