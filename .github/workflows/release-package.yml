@@ -3,6 +3,8 @@ name: Build TRR Release Package
 on:
   workflow_dispatch:
   push:
+    branches:
+      - '**'
     tags:
       - "trr-v*"
 
